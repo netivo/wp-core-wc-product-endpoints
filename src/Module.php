@@ -47,6 +47,7 @@ class Module {
 		new Rewrite();
 		new Archive();
 		new Integration\Yoast();
+		new Integration\RankMath();
 	}
 
 	public function init_config(): void {

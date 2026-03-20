@@ -9,6 +9,9 @@
 
 namespace Netivo\Module\WooCommerce\ProductEndpoints;
 
+use Netivo\Module\WooCommerce\ProductEndpoints\Integration\RankMath;
+use Netivo\Module\WooCommerce\ProductEndpoints\Integration\Yoast;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	header( 'HTTP/1.0 403 Forbidden' );
 	exit;
@@ -22,6 +25,16 @@ class Archive {
 		add_filter( 'woocommerce_taxonomy_archive_description_raw', array( $this, 'change_woocommerce_description' ) );
 		add_filter( 'woocommerce_product_archive_description', array( $this, 'change_woocommerce_description' ) );
 		add_filter( 'woocommerce_get_breadcrumb', [ $this, 'modify_breadcrumbs' ], 20 );
+
+		// Integrate with Rank Math SEO if available
+		if ( defined( 'RANK_MATH_VERSION' ) ) {
+			new RankMath();
+		}
+
+		// Integrate with Yoast SEO if available
+		if ( defined( 'WPSEO_VERSION' ) ) {
+			new Yoast();
+		}
 	}
 
 	public function change_woocommerce_page_title( string $page_title ): string {
