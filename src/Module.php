@@ -46,6 +46,7 @@ class Module {
 	public function init(): void {
 		new Rewrite();
 		new Archive();
+		new Integration\Yoast();
 	}
 
 	public function init_config(): void {
