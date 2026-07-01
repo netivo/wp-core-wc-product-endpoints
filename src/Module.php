@@ -48,6 +48,10 @@ class Module {
 		new Archive();
 		new Integration\Yoast();
 		new Integration\RankMath();
+
+		if ( is_admin() ) {
+			new Admin\Admin();
+		}
 	}
 
 	public function init_config(): void {

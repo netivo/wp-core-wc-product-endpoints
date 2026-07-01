@@ -21,3 +21,10 @@ return array(
     ...
 );
 ```
+
+## Admin settings
+
+Each endpoint's slug (initially set via `default_slug` in the config above) can be overridden per-site
+under **Settings -> Permalinks**, in the "Optional" section, right after the WooCommerce base slugs.
+Overrides are stored in the `netivo_<endpoint_id>_slug` option and take effect immediately (rewrite
+rules are flushed on save).
