@@ -16,14 +16,34 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Integration class for Rank Math SEO.
+ *
+ * Ensures custom titles, descriptions, and canonical URLs are handled correctly
+ * according to Rank Math's filters when a custom product endpoint is requested.
+ */
 class RankMath {
 
+	/**
+	 * RankMath constructor.
+	 *
+	 * Registers filters for Rank Math frontend title, description, and canonical URL.
+	 */
 	public function __construct() {
 		add_filter( 'rank_math/frontend/title', [ $this, 'change_title' ] );
 		add_filter( 'rank_math/frontend/description', [ $this, 'change_description' ] );
 		add_filter( 'rank_math/frontend/canonical', [ $this, 'change_canonical' ] );
 	}
 
+	/**
+	 * Customizes the SEO title outputted by Rank Math.
+	 *
+	 * Replaces default variables inside Rank Math templates with the custom endpoint's title,
+	 * optionally incorporating category names if on category archives.
+	 *
+	 * @param string $title Original page title.
+	 * @return string Modified SEO title.
+	 */
 	public function change_title( string $title ): string {
 		$var = get_query_var( 'nt_products' );
 		if ( ! empty( $var ) ) {
@@ -70,6 +90,14 @@ class RankMath {
 		return $title;
 	}
 
+	/**
+	 * Clears the SEO description outputted by Rank Math.
+	 *
+	 * Clears the meta description for custom endpoints as the page layout differs from normal archives.
+	 *
+	 * @param string $description Original description.
+	 * @return string Emptied description if on custom endpoint, otherwise the original description.
+	 */
 	public function change_description( string $description ): string {
 		$var = get_query_var( 'nt_products' );
 		if ( ! empty( $var ) ) {
@@ -82,6 +110,14 @@ class RankMath {
 		return $description;
 	}
 
+	/**
+	 * Modifies the canonical URL outputted by Rank Math.
+	 *
+	 * Returns the custom endpoint URL instead of the default shop or category URL.
+	 *
+	 * @param string $canonical Original canonical URL.
+	 * @return string Custom endpoint canonical URL if on custom endpoint, otherwise original canonical URL.
+	 */
 	public function change_canonical( string $canonical ): string {
 		$var = get_query_var( 'nt_products' );
 		if ( ! empty( $var ) ) {
@@ -93,6 +129,15 @@ class RankMath {
 		return $canonical;
 	}
 
+	/**
+	 * Helper function to generate the custom endpoint URL.
+	 *
+	 * Generates a category/paged aware URL for custom endpoints.
+	 *
+	 * @param string $var   Endpoint query variable/ID.
+	 * @param int    $paged Current page number (optional).
+	 * @return string The absolute custom endpoint URL.
+	 */
 	protected function get_custom_endpoint_url( string $var, int $paged = 0 ): string {
 		$config = Module::get_config_array();
 		if ( ! array_key_exists( $var, $config ) ) {

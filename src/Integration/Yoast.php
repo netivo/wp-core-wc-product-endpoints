@@ -16,8 +16,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Integration class for Yoast SEO.
+ *
+ * Ensures custom titles, descriptions, canonical URLs, and rel links (next/prev)
+ * are handled correctly according to Yoast SEO's filters when a custom product endpoint is requested.
+ */
 class Yoast {
 
+	/**
+	 * Yoast constructor.
+	 *
+	 * Registers filters for Yoast SEO title, description, canonical URL, and next/prev relation links.
+	 */
 	public function __construct() {
 		add_filter( 'wpseo_title', [ $this, 'change_title' ] );
 		add_filter( 'wpseo_metadesc', [ $this, 'change_description' ] );
@@ -26,6 +37,15 @@ class Yoast {
 		add_filter( 'wpseo_prev_rel_link', [ $this, 'change_prev_rel_link' ] );
 	}
 
+	/**
+	 * Customizes the SEO title outputted by Yoast SEO.
+	 *
+	 * Replaces default variables inside Yoast SEO templates with the custom endpoint's title,
+	 * optionally incorporating category names if on category archives.
+	 *
+	 * @param string $title Original page title.
+	 * @return string Modified SEO title.
+	 */
 	public function change_title( string $title ): string {
 		$var = get_query_var( 'nt_products' );
 		if ( ! empty( $var ) ) {
@@ -66,6 +86,14 @@ class Yoast {
 		return $title;
 	}
 
+	/**
+	 * Clears the SEO description outputted by Yoast SEO.
+	 *
+	 * Clears the description for custom endpoints since description is also cleared on the archive page.
+	 *
+	 * @param string $description Original description.
+	 * @return string Emptied description if on custom endpoint, otherwise the original description.
+	 */
 	public function change_description( string $description ): string {
 		$var = get_query_var( 'nt_products' );
 		if ( ! empty( $var ) ) {
@@ -80,6 +108,14 @@ class Yoast {
 		return $description;
 	}
 
+	/**
+	 * Modifies the canonical URL outputted by Yoast SEO.
+	 *
+	 * Returns the custom endpoint URL instead of the default shop or category URL.
+	 *
+	 * @param string $canonical Original canonical URL.
+	 * @return string Custom endpoint canonical URL if on custom endpoint, otherwise original canonical URL.
+	 */
 	public function change_canonical( string $canonical ): string {
 		$var = get_query_var( 'nt_products' );
 		if ( ! empty( $var ) ) {
@@ -91,6 +127,14 @@ class Yoast {
 		return $canonical;
 	}
 
+	/**
+	 * Modifies the rel="next" link outputted by Yoast SEO.
+	 *
+	 * Generates a paged-aware custom endpoint next rel link if there are more pages.
+	 *
+	 * @param mixed $next Original rel="next" tag.
+	 * @return string Custom endpoint next link tag if on custom endpoint, otherwise original tag.
+	 */
 	public function change_next_rel_link( $next ): string {
 		$var = get_query_var( 'nt_products' );
 		if ( ! empty( $var ) ) {
@@ -109,6 +153,14 @@ class Yoast {
 		return $next;
 	}
 
+	/**
+	 * Modifies the rel="prev" link outputted by Yoast SEO.
+	 *
+	 * Generates a paged-aware custom endpoint prev rel link if not on the first page.
+	 *
+	 * @param mixed $prev Original rel="prev" tag.
+	 * @return string Custom endpoint prev link tag if on custom endpoint, otherwise original tag.
+	 */
 	public function change_prev_rel_link( $prev ): string {
 		$var = get_query_var( 'nt_products' );
 		if ( ! empty( $var ) ) {
@@ -124,6 +176,15 @@ class Yoast {
 		return $prev;
 	}
 
+	/**
+	 * Helper function to generate the custom endpoint URL.
+	 *
+	 * Generates a category/paged aware URL for custom endpoints.
+	 *
+	 * @param string $var   Endpoint query variable/ID.
+	 * @param int    $paged Current page number (optional).
+	 * @return string The absolute custom endpoint URL.
+	 */
 	protected function get_custom_endpoint_url( string $var, int $paged = 0 ): string {
 		$config = Module::get_config_array();
 		if ( ! array_key_exists( $var, $config ) ) {

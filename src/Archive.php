@@ -17,9 +17,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Handles page titles, descriptions, and breadcrumbs for custom product archive endpoints.
+ *
+ * This class hooks into WooCommerce title, description, and breadcrumb filters to display
+ * the customized information from the configuration, and boots SEO integrations.
+ */
 class Archive {
 
-
+	/**
+	 * Archive constructor.
+	 *
+	 * Registers WooCommerce filters for page titles, descriptions, and breadcrumbs,
+	 * and conditionally instantiates Rank Math or Yoast SEO integrations if they are loaded.
+	 */
 	public function __construct() {
 		add_filter( 'woocommerce_page_title', array( $this, 'change_woocommerce_page_title' ) );
 		add_filter( 'woocommerce_taxonomy_archive_description_raw', array( $this, 'change_woocommerce_description' ) );
@@ -37,6 +48,14 @@ class Archive {
 		}
 	}
 
+	/**
+	 * Modifies the WooCommerce archive page title on custom product endpoint requests.
+	 *
+	 * Uses page_title_category if on a category archive, otherwise uses page_title.
+	 *
+	 * @param string $page_title Original WooCommerce page title.
+	 * @return string Modified page title.
+	 */
 	public function change_woocommerce_page_title( string $page_title ): string {
 		$var = get_query_var( 'nt_products' );
 		if ( ! empty( $var ) ) {
@@ -58,6 +77,12 @@ class Archive {
 		return $page_title;
 	}
 
+	/**
+	 * Clears the WooCommerce product archive description on custom product endpoint requests.
+	 *
+	 * @param string $description Original WooCommerce archive description.
+	 * @return string Emptied description if on a custom endpoint, otherwise the original description.
+	 */
 	public function change_woocommerce_description( string $description ): string {
 		$var = get_query_var( 'nt_products' );
 
@@ -70,6 +95,15 @@ class Archive {
 		return $description;
 	}
 
+	/**
+	 * Modifies the breadcrumbs array to inject the custom product endpoint.
+	 *
+	 * If viewing a product category archive, the custom endpoint crumb is inserted
+	 * before the category crumbs. If paginated, the trailing pagination crumb is preserved.
+	 *
+	 * @param array $breadcrumbs Original WooCommerce breadcrumbs array.
+	 * @return array Modified breadcrumbs array.
+	 */
 	public function modify_breadcrumbs( array $breadcrumbs ): array {
 		$var = get_query_var( 'nt_products' );
 
@@ -130,6 +164,15 @@ class Archive {
 		return $breadcrumbs;
 	}
 
+	/**
+	 * Generates the canonical URL for a given product endpoint.
+	 *
+	 * Supports category-specific URL rewrites.
+	 *
+	 * @param string $var           Endpoint ID.
+	 * @param string $category_slug Optional. The product category slug.
+	 * @return string The absolute custom endpoint URL.
+	 */
 	protected function get_endpoint_url( string $var, string $category_slug = '' ): string {
 		$config = Module::get_config_array();
 		if ( ! array_key_exists( $var, $config ) ) {

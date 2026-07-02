@@ -11,8 +11,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Admin dashboard integration coordinator.
+ *
+ * Bootstraps the administration-specific components, such as setting up the custom permalink settings.
+ */
 class Admin {
 
+	/**
+	 * Admin constructor.
+	 *
+	 * Initializes the Permalinks settings class.
+	 */
 	public function __construct() {
 		new Permalinks();
 	}
