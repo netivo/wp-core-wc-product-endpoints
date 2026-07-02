@@ -103,7 +103,7 @@ class Rewrite {
 							case 'bestsellers':
 								return $this->modify_query_bestsellers( $query );
 							case 'custom':
-								if ( ! is_callable( $conf['custom_endpoint'] ) ) {
+								if ( is_callable( $conf['custom_endpoint'] ) ) {
 									return $conf['custom_endpoint']( $query );
 								}
 								break;

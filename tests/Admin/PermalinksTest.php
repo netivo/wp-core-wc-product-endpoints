@@ -31,30 +31,80 @@ class PermalinksTest extends TestCase {
 		Monkey\Functions\expect( 'add_settings_field' )
 			->once()
 			->with(
-				'netivo_product_endpoints_slugs',
-				'Product endpoints',
-				[ $permalinks, 'render_settings_field' ],
+				'netivo_product_endpoints_nonce',
+				'',
+				[ $permalinks, 'render_nonce_field' ],
 				'permalink',
 				'optional'
+			);
+
+		Monkey\Functions\expect( 'add_settings_field' )
+			->once()
+			->with(
+				'netivo_endpoint_promotions_test',
+				'Baza Promotions Test',
+				[ $permalinks, 'render_settings_field' ],
+				'permalink',
+				'optional',
+				[
+					'key'  => 'promotions_test',
+					'conf' => Module::get_config_array()['promotions_test'],
+				]
+			);
+
+		Monkey\Functions\expect( 'add_settings_field' )
+			->once()
+			->with(
+				'netivo_endpoint_bestsellers_test',
+				'Baza Bestsellers Test',
+				[ $permalinks, 'render_settings_field' ],
+				'permalink',
+				'optional',
+				[
+					'key'  => 'bestsellers_test',
+					'conf' => Module::get_config_array()['bestsellers_test'],
+				]
+			);
+
+		Monkey\Functions\expect( 'add_settings_field' )
+			->once()
+			->with(
+				'netivo_endpoint_custom_test',
+				'Baza Custom Test',
+				[ $permalinks, 'render_settings_field' ],
+				'permalink',
+				'optional',
+				[
+					'key'  => 'custom_test',
+					'conf' => Module::get_config_array()['custom_test'],
+				]
 			);
 
 		$permalinks->add_settings();
 	}
 
 	/**
-	 * Test rendering settings inputs field.
+	 * Test rendering the nonce field.
 	 */
-	public function test_render_settings_field(): void {
+	public function test_render_nonce_field(): void {
+		$this->expectNotToPerformAssertions();
+
 		$permalinks = new Permalinks();
 
 		Monkey\Functions\expect( 'wp_nonce_field' )
 			->once()
 			->with( Permalinks::NONCE_ACTION, Permalinks::NONCE_FIELD );
 
-		Monkey\Functions\expect( 'esc_attr' )
-			->andReturnFirstArg();
+		$permalinks->render_nonce_field();
+	}
 
-		Monkey\Functions\expect( 'esc_html' )
+	/**
+	 * Test rendering a single settings input field.
+	 */
+	public function test_render_settings_field(): void {
+		$permalinks = new Permalinks();
+
+		Monkey\Functions\expect( 'esc_attr' )
 			->andReturnFirstArg();
 
 		Monkey\Functions\expect( 'get_option' )
@@ -63,12 +113,13 @@ class PermalinksTest extends TestCase {
 			} );
 
 		ob_start();
-		$permalinks->render_settings_field();
+		$permalinks->render_settings_field( [
+			'key'  => 'promotions_test',
+			'conf' => Module::get_config_array()['promotions_test'],
+		] );
 		$html = ob_get_clean();
 
-		$this->assertStringContainsString( 'netivo-product-endpoints-permalinks', $html );
 		$this->assertStringContainsString( 'name="netivo_product_endpoints[promotions_test]"', $html );
-		$this->assertStringContainsString( 'name="netivo_product_endpoints[bestsellers_test]"', $html );
 		$this->assertStringContainsString( 'value="promotions-slug"', $html );
 	}
 

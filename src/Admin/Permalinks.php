@@ -51,57 +51,74 @@ class Permalinks {
 	/**
 	 * Registers settings fields on the WordPress permalinks page.
 	 *
-	 * Adds the "Product endpoints" field under the optional section.
+	 * Adds one field per configured product endpoint under the optional section, plus a
+	 * hidden field carrying the nonce.
 	 *
 	 * @return void
 	 */
 	public function add_settings(): void {
-		if ( empty( Module::get_config_array() ) ) {
+		$config = Module::get_config_array();
+
+		if ( empty( $config ) ) {
 			return;
 		}
 
 		add_settings_field(
-			'netivo_product_endpoints_slugs',
-			__( 'Product endpoints', 'netivo' ),
-			[ $this, 'render_settings_field' ],
+			'netivo_product_endpoints_nonce',
+			'',
+			[ $this, 'render_nonce_field' ],
 			'permalink',
 			'optional'
 		);
+
+		foreach ( $config as $key => $conf ) {
+			add_settings_field(
+				'netivo_endpoint_' . $key,
+				'Baza ' . ( $conf['page_title'] ?? $key ),
+				[ $this, 'render_settings_field' ],
+				'permalink',
+				'optional',
+				[
+					'key'  => $key,
+					'conf' => $conf,
+				]
+			);
+		}
 	}
 
 	/**
-	 * Renders HTML inputs for all configured product endpoints in the WordPress Permalink settings page.
-	 *
-	 * Outputs form inputs pre-populated with current settings values or placeholders.
+	 * Renders the nonce field used to secure the permalink settings save.
 	 *
 	 * @return void
 	 */
-	public function render_settings_field(): void {
+	public function render_nonce_field(): void {
 		wp_nonce_field( self::NONCE_ACTION, self::NONCE_FIELD );
+	}
+
+	/**
+	 * Renders the HTML input for a single configured product endpoint on the WordPress Permalink settings page.
+	 *
+	 * Outputs a form input pre-populated with its current setting value or placeholder.
+	 *
+	 * @param array $args {
+	 *     @type string $key  The endpoint id.
+	 *     @type array  $conf The endpoint config entry.
+	 * }
+	 *
+	 * @return void
+	 */
+	public function render_settings_field( array $args ): void {
+		$key  = $args['key'];
+		$conf = $args['conf'];
 		?>
-		<table class="form-table netivo-product-endpoints-permalinks">
-			<tbody>
-			<?php foreach ( Module::get_config_array() as $key => $conf ) : ?>
-				<tr>
-					<th scope="row">
-						<label for="netivo_endpoint_<?php echo esc_attr( $key ); ?>">
-							<?php echo esc_html( $conf['page_title'] ?? $key ); ?>
-						</label>
-					</th>
-					<td>
-						<input
-							name="netivo_product_endpoints[<?php echo esc_attr( $key ); ?>]"
-							id="netivo_endpoint_<?php echo esc_attr( $key ); ?>"
-							type="text"
-							class="regular-text code"
-							value="<?php echo esc_attr( get_option( 'netivo_' . $key . '_slug', $conf['default_slug'] ?? '' ) ); ?>"
-							placeholder="<?php echo esc_attr( $conf['default_slug'] ?? '' ); ?>"
-						/>
-					</td>
-				</tr>
-			<?php endforeach; ?>
-			</tbody>
-		</table>
+		<input
+			name="netivo_product_endpoints[<?php echo esc_attr( $key ); ?>]"
+			id="netivo_endpoint_<?php echo esc_attr( $key ); ?>"
+			type="text"
+			class="regular-text code"
+			value="<?php echo esc_attr( get_option( 'netivo_' . $key . '_slug', $conf['default_slug'] ?? '' ) ); ?>"
+			placeholder="<?php echo esc_attr( $conf['default_slug'] ?? '' ); ?>"
+		/>
 		<?php
 	}
 
