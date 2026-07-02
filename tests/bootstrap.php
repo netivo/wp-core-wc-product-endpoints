@@ -25,6 +25,10 @@ namespace {
 				return (bool) ( $this->query_vars[ 'is_tax_' . $taxonomy ] ?? false );
 			}
 
+			public function is_main_query(): bool {
+				return true;
+			}
+
 			public function get( string $key ) {
 				return $this->query_vars[ $key ] ?? null;
 			}
@@ -54,6 +58,18 @@ namespace Netivo\Module\WooCommerce\ProductEndpoints\Tests {
 		protected function setUp(): void {
 			parent::setUp();
 			Monkey\setUp();
+			Monkey\Functions\when( '__' )->returnArg( 1 );
+			Monkey\Functions\when( 'esc_html__' )->returnArg( 1 );
+			Monkey\Functions\when( '_x' )->returnArg( 1 );
+			Monkey\Functions\when( 'get_stylesheet_directory' )->justReturn( __DIR__ . '/stubs' );
+
+			// Reset Module singleton
+			if ( class_exists( 'Netivo\Module\WooCommerce\ProductEndpoints\Module' ) ) {
+				$reflection = new \ReflectionClass( 'Netivo\Module\WooCommerce\ProductEndpoints\Module' );
+				$instance   = $reflection->getProperty( 'instance' );
+				$instance->setAccessible( true );
+				$instance->setValue( null, null );
+			}
 		}
 
 		protected function tearDown(): void {
