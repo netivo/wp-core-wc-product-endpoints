@@ -186,27 +186,13 @@ class Yoast {
 	 * @return string The absolute custom endpoint URL.
 	 */
 	protected function get_custom_endpoint_url( string $var, int $paged = 0 ): string {
-		$config = Module::get_config_array();
-		if ( ! array_key_exists( $var, $config ) ) {
-			return '';
-		}
-
-		$conf          = $config[ $var ];
-		$endpoint_slug = esc_attr( get_option( 'netivo_' . $var . '_slug', $conf['default_slug'] ) );
-		$permalinks    = wc_get_permalink_structure();
-
+		$category_slug = '';
 		if ( is_product_category() ) {
-			$cat = get_queried_object();
-			$url = home_url( sprintf( '%s/%s/%s/', $endpoint_slug, $permalinks['category_rewrite_slug'], $cat->slug ) );
-		} else {
-			$url = home_url( $endpoint_slug . '/' );
+			$cat           = get_queried_object();
+			$category_slug = $cat->slug;
 		}
 
-		if ( $paged > 1 ) {
-			$url = user_trailingslashit( $url . 'page/' . $paged );
-		}
-
-		return $url;
+		return Module::get_endpoint_url( $var, $category_slug, $paged );
 	}
 
 }

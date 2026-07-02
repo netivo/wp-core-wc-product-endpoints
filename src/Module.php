@@ -112,6 +112,40 @@ class Module {
 	}
 
 	/**
+	 * Builds the absolute URL for a product endpoint, optionally scoped to a product category.
+	 *
+	 * Shared by Archive and the Yoast/RankMath/WidgetFilters integrations so the endpoint
+	 * slug/permalink-structure logic lives in a single place.
+	 *
+	 * @param string $var           Endpoint ID (the `nt_products` value).
+	 * @param string $category_slug Optional. Product category slug to scope the URL to.
+	 * @param int    $paged         Optional. Page number, appended when greater than 1.
+	 * @return string The absolute endpoint URL, or an empty string if `$var` is not configured.
+	 */
+	public static function get_endpoint_url( string $var, string $category_slug = '', int $paged = 0 ): string {
+		$config = self::get_config_array();
+		if ( ! array_key_exists( $var, $config ) ) {
+			return '';
+		}
+
+		$conf          = $config[ $var ];
+		$endpoint_slug = esc_attr( get_option( 'netivo_' . $var . '_slug', $conf['default_slug'] ) );
+
+		if ( ! empty( $category_slug ) ) {
+			$permalinks = wc_get_permalink_structure();
+			$url        = home_url( sprintf( '%s/%s/%s/', $endpoint_slug, $permalinks['category_rewrite_slug'], $category_slug ) );
+		} else {
+			$url = home_url( $endpoint_slug . '/' );
+		}
+
+		if ( $paged > 1 ) {
+			$url = user_trailingslashit( $url . 'page/' . $paged );
+		}
+
+		return $url;
+	}
+
+	/**
 	 * Cloning is forbidden for singletons.
 	 */
 	protected function __clone() {

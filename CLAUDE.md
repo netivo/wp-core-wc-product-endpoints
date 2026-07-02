@@ -70,6 +70,20 @@ endpoint and a query var:
    and URL. These two integration classes are structurally parallel (same public method names,
    same `get_custom_endpoint_url()` helper) — when fixing a bug or adding a field in one, check
    whether the same change applies to the other.
+5. `Archive::__construct()` also conditionally instantiates `Integration\WidgetFilters` if the
+   sibling Composer package `netivo/wc-widget-filters` is present (checked via
+   `class_exists('Netivo\Module\WooCommerce\Filters\Widget\Filters')` — a soft runtime dependency,
+   not a `composer.json` requirement). It hooks that module's `netivo/widget/filters/categories`
+   and `netivo/widget/filters/parent` filters to rewrite the category filter widget's category,
+   subcategory, and "back to parent" links so they point at the current product endpoint instead
+   of the plain category archive, mirroring what `Archive::modify_breadcrumbs()` already does for
+   breadcrumbs. The `netivo/widget/filters/parent` filter must exist on the `wc-widget-filters`
+   side for the parent-link rewrite to take effect — see that module's own CLAUDE.md/docs.
+
+`Module::get_endpoint_url( $var, $category_slug = '', $paged = 0 )` is the single shared helper for
+building an endpoint's absolute URL (optionally scoped to a category and/or page number);
+`Archive`, `Integration\Yoast`, `Integration\RankMath`, and `Integration\WidgetFilters` all call it
+rather than duplicating the slug/permalink-structure logic.
 
 **Everywhere else**, `get_query_var( 'nt_products' )` is the signal that the current request is on
 one of these custom endpoints, and `Module::get_config_array()[$var]` is looked up to get that

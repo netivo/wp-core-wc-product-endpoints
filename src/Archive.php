@@ -10,6 +10,7 @@
 namespace Netivo\Module\WooCommerce\ProductEndpoints;
 
 use Netivo\Module\WooCommerce\ProductEndpoints\Integration\RankMath;
+use Netivo\Module\WooCommerce\ProductEndpoints\Integration\WidgetFilters;
 use Netivo\Module\WooCommerce\ProductEndpoints\Integration\Yoast;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -45,6 +46,11 @@ class Archive {
 		// Integrate with Yoast SEO if available
 		if ( defined( 'WPSEO_VERSION' ) ) {
 			new Yoast();
+		}
+
+		// Integrate with the netivo/wc-widget-filters category filter widget if available
+		if ( class_exists( 'Netivo\Module\WooCommerce\Filters\Widget\Filters' ) ) {
+			new WidgetFilters();
 		}
 	}
 
@@ -174,19 +180,6 @@ class Archive {
 	 * @return string The absolute custom endpoint URL.
 	 */
 	protected function get_endpoint_url( string $var, string $category_slug = '' ): string {
-		$config = Module::get_config_array();
-		if ( ! array_key_exists( $var, $config ) ) {
-			return '';
-		}
-
-		$conf          = $config[ $var ];
-		$endpoint_slug = esc_attr( get_option( 'netivo_' . $var . '_slug', $conf['default_slug'] ) );
-		$permalinks    = wc_get_permalink_structure();
-
-		if ( ! empty( $category_slug ) ) {
-			return home_url( sprintf( '%s/%s/%s/', $endpoint_slug, $permalinks['category_rewrite_slug'], $category_slug ) );
-		}
-
-		return home_url( $endpoint_slug . '/' );
+		return Module::get_endpoint_url( $var, $category_slug );
 	}
 }
